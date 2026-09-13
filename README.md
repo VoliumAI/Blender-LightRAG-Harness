@@ -7,13 +7,14 @@ whatever model or agent you already use, and it hands back grounded Blender/`bpy
 that model to answer from. Everything runs on CPU; the embedding model is ~146 MB.
 
 ## What's in this repo
-<img width="1678" height="937" alt="image" src="https://github.com/user-attachments/assets/230af666-2091-4251-8880-72397ca4fac7" />
+<img width="1678" height="937" alt="image" src="https://github.com/user-attachments/assets/1c48c79f-d173-438e-bb5e-59b8810b393b" />
 
 | File | What it is |
 |---|---|
 | `blender_lightrag/blender_docs.faiss` | FAISS vector index of embedded documentation chunks |
 | `blender_lightrag/chunk_metadata.json` | The text/metadata for each chunk, in the same order as the FAISS index |
 | `blender_lightrag/knowledge_graph.graphml` | NetworkX graph connecting `bpy` modules, operators, classes, and functions |
+| `blender_lightrag/image_metadata.json` | Which local image file backs which source-doc image, its caption, and every page that references it — a lookup table, not read by the retrieval code below |
 
 The embedding model and the reference images are hosted separately (see Setup below) — this
 keeps the GitHub repo small, since neither fits comfortably in a git repo.
@@ -308,6 +309,13 @@ block alongside `ctx`.
 `source_url` (source page on `docs.blender.org`), `section_kind` (`"prose"` or `"code"`),
 `chunk_index`, `image_refs` (list of `{"local_path", "alt"}`, path relative to
 `blender_lightrag/`).
+
+**Image metadata** (`image_metadata.json`): a dict keyed by `local_path` (the same path used in
+`image_refs` above), each entry `{"source_urls": [...], "alt": "...", "pages": [...]}` — every
+source-doc URL that image appeared under, and every page that references it. This is a
+supplementary lookup, not something the retrieval code above reads — useful if you want to
+browse "what diagrams exist for topic X" independent of any specific query, but not required for
+`retrieve()` to work.
 
 **Knowledge graph**: a `networkx.DiGraph` in `knowledge_graph.graphml`. Entity/relation
 extraction is regex-based pattern matching over `bpy` module/operator/class/function names in the
